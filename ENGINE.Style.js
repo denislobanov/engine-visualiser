@@ -36,11 +36,9 @@ ENGINE.Style = {
     },
 
     getNodeFont: function(baseType) {
-        var font = {
+        return {
             color: this.getNodeColour(baseType).border
         };
-
-        return font;
     },
 
     getEdgeColour: function() {
@@ -48,10 +46,8 @@ ENGINE.Style = {
     },
 
     getEdgeFont: function() {
-        var font = {
+        return {
             color: this.getEdgeColour().color
-        }
-
-        return font;
+        };
     }
 };
