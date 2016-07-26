@@ -27,26 +27,37 @@ ENGINE.Graph = {
         }
     },
 
-    run: function (container, options) {
-        this._data.network = new vis.Network(
+    run: function (container, options, callbacks) {
+        var network = new vis.Network(
             container,
             this._data.graph,
             this._defaults.options || options
         );
+
+        if(_.has(callbacks, "click"))
+            network.on("click", callbacks.click);
+
+        if(_.has(callbacks, "doubleClick"))
+            network.on("doubleClick", callbacks.doubleClick);
+
+        if(_.has(callbacks, "rightClick"))
+            network.on("oncontext", callbacks.rightClick);
+
+        this._data.network = network;
     },
 
-    addNode: function (data) {
+    addNode: function (id, label, baseType, href) {
         var node = {
-            id: data._id,
-            label: data._id,
-            color: ENGINE.Style.getNodeColour(data._baseType),
-            font: ENGINE.Style.getNodeFont(data._baseType),
+            id: id,
+            label: label,
+            color: ENGINE.Style.getNodeColour(baseType),
+            font: ENGINE.Style.getNodeFont(baseType),
             selected: false,
-            shape: ENGINE.Style.getNodeShape(data._baseType)
+            shape: ENGINE.Style.getNodeShape(baseType)
         };
 
         this._data.graph.nodes.add(node);
-        this._data.nodeMap[this.getNodeHref(data)] = node;
+        this._data.nodeMap[href] = node;
     },
 
     addEdge: function (fromNode, toNode, name) {
@@ -63,11 +74,5 @@ ENGINE.Graph = {
 
     lookupNode: function (href) {
         return this._data.nodeMap[href];
-    },
-
-    getNodeHref: function (node) {
-        console.log("getting href: ");
-        console.log(node);
-        return node._links.self.href;
     }
 };
