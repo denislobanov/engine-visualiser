@@ -1,24 +1,37 @@
 "use strict";
 
-// Create a dummy network
-ENGINE.Network.addNode({
-    _id: "1",
-    _links: {
-        self: {
-            href: "href-1"
-        }
+function addEdges(name, fromNode, nodeList) {
+    console.log("adding edges: ");
+    console.log(nodeList);
+
+    _.map(nodeList, function(toNode) {
+        addNodes(toNode);
+        ENGINE.Graph.addEdge(fromNode, ENGINE.Graph.getNodeHref(toNode), name);
+    });
+}
+
+function addNodes(data) {
+    console.log("adding node: ");
+    console.log(data);
+
+    ENGINE.Graph.addNode(data);
+
+    if(_.has(data, "_embedded")) {
+        _.map(_.keys(data._embedded), function(k) {
+            addEdges(k, ENGINE.Graph.getNodeHref(data), data._embedded[k]);
+        });
     }
-});
-ENGINE.Network.addNode({
-    _id: "2",
-    _links: {
-        self: {
-            href: "href-2"
-        }
-    }
-});
-ENGINE.Network.addEdge("href-1", "href-2", "edge-1");
+}
+
+
+
+
+var testRequest = {
+    url: "proxy.php?q=http://localhost:8080/concept/ccaabb7f-668f-4f05-9b8f-974f2a3972c0",
+    success: addNodes
+};
+
+ENGINE.Network.request(testRequest);
 
 var container = document.getElementById('mm_network');
-ENGINE.Network.run(container);
-
+ENGINE.Graph.run(container);

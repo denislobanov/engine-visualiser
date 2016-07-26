@@ -1,67 +1,30 @@
 "use strict";
 
 ENGINE.Network = {
-    _data: {
-        // vis.js network representation
-        graph: {
-            nodes: new vis.DataSet([]),
-            edges: new vis.DataSet([])
-        },
-        network: {},
-
-        // Internal lookup of vis.js nodes
-        nodeMap: {}
-    },
-
-    // vis.js default config
     _defaults: {
-        options: {
-            edges: {
-                arrows: {
-                    to: true
-                }
+        requestType: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        //async: true,
+        cache: false
+    },
+
+    // can use queue of pending requests here..
+
+    request: function(requestData) {
+        $.ajax({
+            type: requestData.requestType || this._defaults.requestType,
+            contentType: requestData.contentType || this._defaults.contentType,
+            dataType: requestData.dataType || this._defaults.dataType,
+            cache: requestData.cache || this._defaults.cache,
+            data: requestData.data,
+            url: requestData.url,
+
+            error: function(errorThrown) {
+                console.log(errorThrown);
             },
-            physics: {
-                solver: "forceAtlas2Based"
-            }
-        }
-    },
 
-    run: function (container, options) {
-        this._data.network = new vis.Network(
-            container,
-            this._data.graph,
-            this._defaults.options || options
-        );
-    },
-
-    addNode: function (data) {
-        var node = {
-            id: data._id,
-            label: data._id,
-            color: ENGINE.Style.getNodeColour(data._baseType),
-            font: ENGINE.Style.getNodeFont(data._baseType),
-            selected: false,
-            shape: ENGINE.Style.getNodeShape(data._baseType)
-        };
-
-        this._data.graph.nodes.add(node);
-        this._data.nodeMap[data._links.self.href] = node;
-    },
-
-    addEdge: function (fromNode, toNode, name) {
-        var edge = {
-            from: this.lookupNode(fromNode).id,
-            to: this.lookupNode(toNode).id,
-            label: name,
-            color: ENGINE.Style.getEdgeColour(),
-            font: ENGINE.Style.getEdgeFont()
-        };
-
-        this._data.graph.edges.add(edge);
-    },
-
-    lookupNode: function (href) {
-        return this._data.nodeMap[href];
+            success: requestData.success
+        });
     }
 };
