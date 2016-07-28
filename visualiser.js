@@ -2,6 +2,7 @@
 
 function createGraph(data) {
     ENGINE.API.addNodes(data);
+    ENGINE.API.iterateEmbeddedKeys(data);
 }
 
 function sendRequest(href, success) {
@@ -14,8 +15,7 @@ function sendRequest(href, success) {
 }
 
 function onClick(param) {
-    console.log(param);
-    _.map(param.nodes, function(n) { sendRequest(n ,ENGINE.API.addEmbeddedNodes) })
+    _.map(param.nodes, function(x) { sendRequest(x, createGraph) })
 }
 
 

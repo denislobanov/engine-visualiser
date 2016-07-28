@@ -63,18 +63,13 @@ ENGINE.Graph = {
      * @param baseType Base type of node, as given by Engine HAL response.
      * @param href Node HREF as give by Engine HAL response.
      */
-    addNode: function (id, label, baseType, href) {
+    addNode: function(id, label, baseType, href) {
         // Do not (re)add existing nodes
         if(this.lookupNode(href))
             return;
 
-        console.log("href does not exist in map!");
-        console.log(href);
-        console.log(this._data.nodeMap);
-
-
         var node = {
-            id: id,
+            id: href,
             label: label,
             color: ENGINE.Style.getNodeColour(baseType),
             font: ENGINE.Style.getNodeFont(baseType),
@@ -95,14 +90,16 @@ ENGINE.Graph = {
      * @param toNode HREF of inbound node for edge.
      * @param name Label to put on edge.
      */
-    addEdge: function (fromNode, toNode, name) {
-        // Do not (re)add existing edges
-        if(this.lookupEdge(fromNode, toNode, name))
+    addEdge: function(fromNode, toNode, name) {
+
+        if(this.lookupNode(toNode))
             return;
 
+        console.log("adding edge from("+fromNode+") to ("+toNode+") as ("+name+")");
+
         var edge = {
-            from: this.lookupNode(fromNode).id,
-            to: this.lookupNode(toNode).id,
+            from: fromNode,
+            to: toNode,
             label: name,
             color: ENGINE.Style.getEdgeColour(),
             font: ENGINE.Style.getEdgeFont()
@@ -112,7 +109,7 @@ ENGINE.Graph = {
         this._data.graph.edges.add(edge);
 
         // Save in internal map for lookupEdge
-        this.saveEdge(fromNode, toNode, name, edge);
+        this.saveEdge(fromNode, toNode, name);
     },
 
     /**
@@ -120,7 +117,7 @@ ENGINE.Graph = {
      * @param href - String of nodes href as given by _links.self.href from Engine
      * @returns {*}  node object if it exists, null if it does not.
      */
-    lookupNode: function (href) {
+    lookupNode: function(href) {
         if(_.has(this._data.nodeMap, href))
             return this._data.nodeMap[href];
 
@@ -138,37 +135,16 @@ ENGINE.Graph = {
     },
 
     /**
-     * Finds an Edge object in internal map. If it does not exists returns
-     * @param fromNode HREF of outbound node for edge.
-     * @param toNode HREF of inbound node for edge.
-     * @param name Label to put on edge.
-     * @returns {*}
-     */
-    lookupEdge: function(fromNode, toNode, name) {
-        if(_.has(this._data.edgeMap, name)) {
-            if (_.has(this._data.edgeMap[name], fromNode))
-                if (_.has(this._data.edgeMap[name][fromNode], toNode))
-                    return this._data.edgeMap[name][fromNode][toNode];
-        }
-
-        return null;
-    },
-
-    /**
      * Store edge in internal map.
      * @param fromNode HREF of outbound node for edge.
      * @param toNode HREF of inbound node for edge.
-     * @param name Label to put on edge.
-     * @param edge Edge object.
+     * @param name Label of edge.
      */
-    saveEdge: function(fromNode, toNode, name, edge) {
-        if(!(name in this._data.edgeMap))
-            this._data.edgeMap[name] = {};
+    saveEdge: function(fromNode, toNode, name) {
+        if(!_.has(this._data.edgeMap, fromNode))
+            this._data.edgeMap[fromNode] = {};
 
-        if(!(fromNode in this._data.edgeMap[name]))
-            this._data.edgeMap[name][fromNode] = {};
-
-        if(!(toNode in this._data.edgeMap[name][fromNode]))
-            this._data.edgeMap[name][fromNode][toNode] = edge;
+        if(!_.has(this._data.edgeMap[fromNode], toNode))
+            this._data.edgeMap[fromNode][toNode] = name;
     }
 };
