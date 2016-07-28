@@ -4,9 +4,9 @@ function createGraph(data) {
     ENGINE.API.addNodes(data);
 }
 
-function sendRequest(uuid, success) {
+function sendRequest(href, success) {
     var testRequest = {
-        url: "proxy.php?q=http://localhost:4567/concept/"+uuid,
+        url: "proxy.php?q="+href,
         success: success
     };
 
@@ -14,11 +14,12 @@ function sendRequest(uuid, success) {
 }
 
 function onClick(param) {
+    console.log(param);
     _.map(param.nodes, function(n) { sendRequest(n ,ENGINE.API.addEmbeddedNodes) })
 }
 
 
-sendRequest("ccaabb7f-668f-4f05-9b8f-974f2a3972c0", createGraph);
+sendRequest("http://localhost:8080/concept/ccaabb7f-668f-4f05-9b8f-974f2a3972c0", createGraph);
 
 var callbacks = {
     click: onClick

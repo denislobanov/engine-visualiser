@@ -28,6 +28,15 @@ ENGINE.Graph = {
         }
     },
 
+    /**
+     * Render a vis.js graph. Pass callbacks for actions on user interaction.
+     * @param container Canvas for graph.
+     * @param options Default overrides for vis.js graph options
+     * @param callbacks Object of callback. The following hooks are valid:
+     *  callbacks.click         action on left click
+     *  callbacks.doubleClick   action on left double click
+     *  callbacks.rightClick    action on right click
+     */
     run: function (container, options, callbacks) {
         var network = new vis.Network(
             container,
@@ -47,6 +56,13 @@ ENGINE.Graph = {
         this._data.network = network;
     },
 
+    /**
+     * Add node to graph
+     * @param id ID of node; this is what will be given to callbacks passed to run().
+     * @param label Node Label - this is what will be displayed on the canvas.
+     * @param baseType Base type of node, as given by Engine HAL response.
+     * @param href Node HREF as give by Engine HAL response.
+     */
     addNode: function (id, label, baseType, href) {
         // Do not (re)add existing nodes
         if(this.lookupNode(href))
@@ -73,6 +89,12 @@ ENGINE.Graph = {
         this.saveNode(href, node);
     },
 
+    /**
+     * Adds an edge between two nodes on graph.
+     * @param fromNode HREF of outbound node for edge.
+     * @param toNode HREF of inbound node for edge.
+     * @param name Label to put on edge.
+     */
     addEdge: function (fromNode, toNode, name) {
         // Do not (re)add existing edges
         if(this.lookupEdge(fromNode, toNode, name))
@@ -99,7 +121,10 @@ ENGINE.Graph = {
      * @returns {*}  node object if it exists, null if it does not.
      */
     lookupNode: function (href) {
-        return this._data.nodeMap[href];
+        if(_.has(this._data.nodeMap, href))
+            return this._data.nodeMap[href];
+
+        return null;
     },
 
     /**
@@ -112,6 +137,13 @@ ENGINE.Graph = {
         this._data.nodeMap[href] = node;
     },
 
+    /**
+     * Finds an Edge object in internal map. If it does not exists returns
+     * @param fromNode HREF of outbound node for edge.
+     * @param toNode HREF of inbound node for edge.
+     * @param name Label to put on edge.
+     * @returns {*}
+     */
     lookupEdge: function(fromNode, toNode, name) {
         if(_.has(this._data.edgeMap, name)) {
             if (_.has(this._data.edgeMap[name], fromNode))
@@ -119,9 +151,16 @@ ENGINE.Graph = {
                     return this._data.edgeMap[name][fromNode][toNode];
         }
 
-        return false;
+        return null;
     },
 
+    /**
+     * Store edge in internal map.
+     * @param fromNode HREF of outbound node for edge.
+     * @param toNode HREF of inbound node for edge.
+     * @param name Label to put on edge.
+     * @param edge Edge object.
+     */
     saveEdge: function(fromNode, toNode, name, edge) {
         if(!(name in this._data.edgeMap))
             this._data.edgeMap[name] = {};
