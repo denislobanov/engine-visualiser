@@ -1,6 +1,8 @@
 "use strict";
 
 ENGINE.API = {
+    _baseUrl: "http://localhost:8080/",
+
     /**
      * Returns href of current node.
      * @param node Object
@@ -17,7 +19,7 @@ ENGINE.API = {
     addNodes: function(data) {
         // Add this node to graph
         var name = data._value || data._id;
-        ENGINE.Graph.addNode(data._id, name, data._baseType, this.getNodeHref(data));
+        ENGINE.Graph.addNode(data._id, name, data._baseType, data._type, this.getNodeHref(data));
     },
 
     /**
@@ -33,19 +35,25 @@ ENGINE.API = {
     },
 
     /**
-     *
+     * Add edges and nodes from "_embedded"
      * @param parentHref
      * @param nodeList
      * @param edgeName
      */
     addEmbedded: function(parentHref, nodeList, edgeName) {
         _.map(nodeList, function(x) {
+            var href = this.getNodeHref(x);
+
             // Add edge from x to parent
-            ENGINE.Graph.addEdge(parentHref, this.getNodeHref(x), edgeName);
+            if(x._baseType === "relation-type")
+                ENGINE.Graph.addInboundEdge(parentHref, href, edgeName);
+            else
+                ENGINE.Graph.addOutboundEdge(parentHref, href, edgeName);
 
             // Add node from nodeList
             this.addNodes(x);
 
         }, ENGINE.API);
     }
+
 };

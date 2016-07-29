@@ -11,6 +11,20 @@ ENGINE.Network = {
 
     // can use queue of pending requests here..
 
+    /**
+     * Make an AJAX request with @requestData parameters.
+     * Required attributes of @requestData are:
+     *  - url
+     *  - success
+     * Optional attributes:
+     *  - data
+     * Optional attributes with defaults:
+     *  - type
+     *  - contentType
+     *  - dataType
+     *  - cache
+     * @param requestData
+     */
     request: function(requestData) {
         $.ajax({
             type: requestData.requestType || this._defaults.requestType,
