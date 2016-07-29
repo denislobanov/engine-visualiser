@@ -1,12 +1,12 @@
 "use strict";
 
 function sendRequest(href, success) {
-    var testRequest = {
+    var proxyRequest = {
         url: "proxy.php?q="+href,
         success: success
     };
 
-    ENGINE.Network.request(testRequest);
+    ENGINE.Network.request(proxyRequest);
 }
 
 function createGraph(data) {
@@ -15,9 +15,6 @@ function createGraph(data) {
 }
 
 function addMetaNode(childHref, data) {
-    console.log("addmetanode. childhref: "+childHref);
-    console.log(data);
-
     ENGINE.API.addNodes(data);
     ENGINE.Graph._addEdge(childHref, ENGINE.API.getNodeHref(data),  "isa");
 }
@@ -31,7 +28,7 @@ var callbacks = {
 
     doubleClick: function(param) {
         var childHref = param.nodes[0];
-        var parentHref = "http://localhost:8080/concept/"+ENGINE.Graph.lookupNode(childHref).type;
+        var parentHref = "http://localhost:8080/concept/"+ENGINE.Graph.getNodeType(childHref);
 
         sendRequest(parentHref, addMetaNode.bind(undefined, childHref));
     },
@@ -39,10 +36,7 @@ var callbacks = {
     rightClick: function(param) {
         console.log(param);
 
-        var href = param.nodes[0];
-
-        _.map(param.edges, function(x) { ENGINE.Graph.removeEdge(x, href); }, ENGINE.Graph);
-        ENGINE.Graph.removeNode(href);
+        _.map(param.nodes, ENGINE.Graph.removeNode, ENGINE.Graph);
     }
 };
 var container = document.getElementById('mm_network');

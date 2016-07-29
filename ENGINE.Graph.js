@@ -11,7 +11,8 @@ ENGINE.Graph = {
 
         // Internal lookup of vis.js nodes
         nodeMap: {},
-        edgeMap: {}
+        edgeMap: {},
+        nodeTypeMap: {}
     },
 
     // vis.js default config
@@ -61,12 +62,12 @@ ENGINE.Graph = {
      * @param id ID of node; this is what will be given to callbacks passed to run().
      * @param label Node Label - this is what will be displayed on the canvas.
      * @param baseType Base type of node, as given by Engine HAL response.
-     * @param type
+     * @param type Node type as give by Engine HAL response.
      * @param href Node HREF as give by Engine HAL response.
      */
     addNode: function(id, label, baseType, type, href) {
         // Do not (re)add existing nodes
-        if(this.lookupNode(href))
+        if(this.getNodeType(href))
             return;
 
         var node = {
@@ -75,16 +76,16 @@ ENGINE.Graph = {
             color: ENGINE.Style.getNodeColour(baseType),
             font: ENGINE.Style.getNodeFont(baseType),
             shape: ENGINE.Style.getNodeShape(baseType),
-            selected: false,
-            type: type,
-            baseType: baseType
+            selected: false
         };
 
         // Add to vis.js graph
         this._data.graph.nodes.add(node);
 
-        // Save in map for lookupNode
-        this.saveNode(href, node);
+        // Only add to type map
+        this._data.nodeTypeMap[href] = type;
+
+        this.saveNode(href);
     },
 
     /**
@@ -96,11 +97,10 @@ ENGINE.Graph = {
      */
     addOutboundEdge: function(fromNode, toNode, name) {
         if(this.lookupNode(toNode)) {
-            console.log("outbound "+fromNode + " -> "+ toNode+" :: ("+toNode+") already exists");
             return;
         }
 
-        this._addEdge(fromNode, toNode, name);
+        return this._addEdge(fromNode, toNode, name);
     },
 
     /**
@@ -112,11 +112,10 @@ ENGINE.Graph = {
      */
     addInboundEdge: function(toNode, fromNode, name) {
         if(this.lookupNode(fromNode)) {
-            console.log("inbound "+fromNode + " -> "+ toNode+" :: ("+fromNode+") already exists");
             return;
         }
 
-        this._addEdge(fromNode, toNode, name);
+        return this._addEdge(fromNode, toNode, name);
     },
 
     /**
@@ -126,9 +125,15 @@ ENGINE.Graph = {
      * @param name Label to put on edge.
      */
     _addEdge: function(fromNode, toNode, name) {
+        if(this.alreadyConnected(fromNode, toNode))
+            return;
+
         console.log("adding edge from("+fromNode+") to ("+toNode+") as ("+name+")");
 
+        var edgeID = vis.util.randomUUID();
+
         var edge = {
+            id: edgeID,
             from: fromNode,
             to: toNode,
             label: name,
@@ -139,14 +144,31 @@ ENGINE.Graph = {
         // Add to graph
         this._data.graph.edges.add(edge);
 
-        // Save in internal map for lookupEdge
-        this.saveEdge(fromNode, toNode, name);
+        // Update internal edge tracking
+        this.saveEdge(edgeID, [fromNode, toNode]);
+        this.appendToNodeMap(fromNode, edgeID);
+        this.saveEdge(toNode, edgeID);
+    },
+
+    alreadyConnected: function(nodeA, nodeB) {
+        // Boundary check for either node not existing
+        if((!_.has(this._data.nodeMap, nodeA)) || (!_.has(this._data.nodeMap, nodeB)))
+            return false;
+
+        // _.union of empty and non-empty array results in contents of non-empty array
+        if((this._data.nodeMap[nodeA].length === 0) || (this._data.nodeMap[nodeB].length === 0))
+            return false;
+
+        var edgeIDs = _.union(this._data.nodeMap[nodeA], this._data.nodeMap[nodeB]);
+        console.log("union:");
+        console.log(edgeIDs);
+        return !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
     },
 
     /**
      * Finds Node in internal map. If it does not exist returns null
      * @param href - String of nodes href as given by _links.self.href from Engine
-     * @returns {*}  node object if it exists, null if it does not.
+     * @returns {*}  Array of edgeID's that the node has or `null`.
      */
     lookupNode: function(href) {
         if(_.has(this._data.nodeMap, href))
@@ -155,28 +177,35 @@ ENGINE.Graph = {
         return null;
     },
 
+    getNodeType: function(href) {
+        return this._data.nodeTypeMap[href];
+    },
+
     /**
      * Stores node in internal map. Used to quickly track with nodes we have already added to the graph, and to avoid trying
      * to add duplicates.
-     * @param href - String of nodes href as give by _links.self.href
-     * @param node - Node object to add.
+     * @param href
+     * @param edgeID
      */
-    saveNode: function(href, node) {
-        this._data.nodeMap[href] = node;
+    appendToNodeMap: function(href, edgeID) {
+        if (_.has(this._data.nodeMap, href))
+            this._data.nodeMap[href].push(edgeID);
+        else
+            this._data.nodeMap[href] = [edgeID];
+    },
+
+    saveNode: function(href) {
+        this._data.nodeMap[href] = [];
     },
 
     /**
      * Store edge in internal map.
-     * @param fromNode HREF of outbound node for edge.
-     * @param toNode HREF of inbound node for edge.
-     * @param name Label of edge.
+     * @param edgeID
+     * @param nodeList
      */
-    saveEdge: function(fromNode, toNode, name) {
-        if(!_.has(this._data.edgeMap, fromNode))
-            this._data.edgeMap[fromNode] = {};
-
-        if(!_.has(this._data.edgeMap[fromNode], toNode))
-            this._data.edgeMap[fromNode][toNode] = name;
+    saveEdge: function(edgeID, nodeList) {
+        if(!_.has(this._data.edgeMap, edgeID))
+            this._data.edgeMap[edgeID] = nodeList;
     },
 
     /**
@@ -185,32 +214,40 @@ ENGINE.Graph = {
      */
     removeNode: function(href) {
         console.log("removing node: "+href);
-        this._data.graph.nodes.remove(this.lookupNode(href));
+
+        _.map(this._data.nodeMap[href], function(edgeID) {
+            _.map(_.without(this._data.edgeMap[edgeID], href), function(node) {
+                if(_.without(this._data.nodeMap[node], edgeID).length == 0) {
+                    // Remove orphan nodes
+                    delete this._data.nodeMap[node];
+                    delete this._data.nodeTypeMap[node];
+                    this._data.graph.nodes.remove(node);
+
+                    //remove connecting edge
+                    this.removeEdge(edgeID);
+                }
+            }, this);
+
+            // Remove all edges connected to this node
+            this.removeEdge(edgeID);
+        }, this);
+
+        // Now we can remove this node
         delete this._data.nodeMap[href];
+        delete this._data.nodeTypeMap[href];
+        this._data.graph.nodes.remove(href);
     },
 
     /**
      * Remove an edge and any orphaned nodes connected by it.
      * @param id
-     * @param href
      */
-    removeEdge: function(id, href) {
-        // Remove orphaned connected nodes too
-        _.map(_.keys(this._data.edgeMap[href]), function(k) {
-            console.log("checking: ");
-            console.log(k);
-            console.log(_.keys(this._data.edgeMap[k]));
-
-            if(_.isEmpty(this._data.edgeMap[k])) {
-                this.removeNode(k);
-            }
-        }, this);
-
+    removeEdge: function(id) {
         // Remove edge from graph
         this._data.graph.edges.remove(id);
 
         // Remove edge from map
-        delete this._data.edgeMap[href];
+        delete this._data.edgeMap[id];
     }
 
 };
