@@ -141,10 +141,13 @@ ENGINE.Graph = {
             return false;
         }
 
-        var edgeIDs = _.union(this._data.nodeMap[nodeA], this._data.nodeMap[nodeB]);
-        console.log("union:");
+        var edgeIDs = _.intersection(this._data.nodeMap[nodeA], this._data.nodeMap[nodeB]);
+        console.log("intersection of("+nodeA+") and ("+nodeB+"):");
         console.log(edgeIDs);
-        return !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
+
+        var result = !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
+        console.log("result: "+result);
+        return result;
     },
 
     /**

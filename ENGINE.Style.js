@@ -28,7 +28,34 @@ ENGINE.Style = {
     },
 
     getNodeColour: function(baseType) {
-        return this._defaults.node.colour;
+        switch(baseType) {
+            case "relation-type":
+                return {
+                    background: this._defaults.node.colour.background,
+                    border: "#77dd77",
+                    highlight: {
+                        border: "#77dd77"
+                    }
+                };
+            case "type":
+                return {
+                    background: this._defaults.node.colour.background,
+                    border: "#5bc2e7",
+                    highlight: {
+                        border: "#5bc2e7"
+                    }
+                };
+            case "resource-type":
+                return {
+                    background: this._defaults.node.colour.background,
+                    border: "#ff7878",
+                    highlight: {
+                        border: "#ff7878"
+                    }
+                };
+            default:
+                return this._defaults.node.colour;
+        }
     },
 
     getNodeShape: function(baseType) {
