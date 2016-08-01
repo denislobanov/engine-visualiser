@@ -16,7 +16,7 @@ function createGraph(data) {
 
 function addMetaNode(childHref, data) {
     ENGINE.API.addNodes(data);
-    ENGINE.Graph._addEdge(childHref, ENGINE.API.getNodeHref(data),  "isa");
+    ENGINE.Graph.addEdge(childHref, ENGINE.API.getNodeHref(data),  "isa");
 }
 
 sendRequest("http://localhost:8080/concept/ccaabb7f-668f-4f05-9b8f-974f2a3972c0", createGraph);

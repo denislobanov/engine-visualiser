@@ -50,9 +50,9 @@ ENGINE.API = {
 
             // Add edge from x to parent
             if(x._baseType === "relation-type")
-                ENGINE.Graph.addInboundEdge(parentHref, href, edgeName);
+                ENGINE.Graph.addEdge(href, parentHref, edgeName);
             else
-                ENGINE.Graph.addOutboundEdge(parentHref, href, edgeName);
+                ENGINE.Graph.addEdge(parentHref, href, edgeName);
 
             // Add node from nodeList
             this.addNodes(x);
