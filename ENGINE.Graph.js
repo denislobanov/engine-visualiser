@@ -87,7 +87,7 @@ ENGINE.Graph = {
     },
 
     /**
-     * Internal method to add edge between two nodes.
+     * Add edge between two nodes. Uses alreadyConnected() to avoid adding duplicate edges.
      * @param fromNode HREF of outbound node for edge.
      * @param toNode HREF of inbound node for edge.
      * @param name Label to put on edge.
@@ -117,9 +117,9 @@ ENGINE.Graph = {
     },
 
     /**
-     *
-     * @param nodeA
-     * @param nodeB
+     * Checks if two nodes are already connected by an edge.
+     * @param nodeA HREF string of a node.
+     * @param nodeB HREF string of a node.
      * @returns {boolean}
      */
     alreadyConnected: function(nodeA, nodeB) {
@@ -149,9 +149,9 @@ ENGINE.Graph = {
     },
 
     /**
-     *
-     * @param href
-     * @returns {*}
+     * Returns a node's `type`.
+     * @param href Node HREF string.
+     * @returns {*} String with node's `type`.
      */
     getNodeType: function(href) {
         return this._data.nodeTypeMap[href];
@@ -204,9 +204,9 @@ ENGINE.Graph = {
     },
 
     /**
-     *
-     * @param parent
-     * @param edgeID
+     * Removes child node of @parent connected by @edgeID if that child node has no other edges except to its parent.
+     * @param parent HREF String
+     * @param edgeID Edge ID String (T4 UUID)
      */
     removeOrphanNodes: function(parent, edgeID) {
         // Node connected to parent by edgeID

@@ -1,8 +1,6 @@
 "use strict";
 
 ENGINE.API = {
-    _baseUrl: "http://localhost:8080/",
-
     /**
      * Returns href of current node.
      * @param node Object

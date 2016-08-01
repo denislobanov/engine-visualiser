@@ -27,6 +27,11 @@ ENGINE.Style = {
         }
     },
 
+    /**
+     * Return node colour based on its @baseType or default colour otherwise.
+     * @param baseType
+     * @returns {*}
+     */
     getNodeColour: function(baseType) {
         switch(baseType) {
             case "relation-type":
@@ -58,20 +63,44 @@ ENGINE.Style = {
         }
     },
 
+    /**
+     * Return node shape configuration based on its @baseType or default shape otherwise.
+     * @param baseType
+     * @returns {string}
+     */
     getNodeShape: function(baseType) {
-        return this._defaults.node.shape;
+        switch(baseType) {
+            case "resource-type":
+            case "relation-type":
+            case "entity-type":
+            default:
+                return this._defaults.node.shape;
+        }
     },
 
+    /**
+     * Return node label font configuration based on its @baseType or default font otherwise.
+     * @param baseType
+     * @returns {{color: (string|string|string)}}
+     */
     getNodeFont: function(baseType) {
         return {
             color: this.getNodeColour(baseType).border
         };
     },
 
+    /**
+     * Return edge colour configuration.
+     * @returns {ENGINE.Style._defaults.edge.colour|{color, highlight}}
+     */
     getEdgeColour: function() {
         return this._defaults.edge.colour;
     },
 
+    /**
+     * Return edge label font configuration.
+     * @returns {{color: string}}
+     */
     getEdgeFont: function() {
         return {
             color: this.getEdgeColour().color
