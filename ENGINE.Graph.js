@@ -96,8 +96,6 @@ ENGINE.Graph = {
         if(this.alreadyConnected(fromNode, toNode))
             return;
 
-        console.log("adding edge from("+fromNode+") to ("+toNode+") as ("+name+")");
-
         var edgeID = vis.util.randomUUID();
 
         var edge = {
@@ -189,8 +187,6 @@ ENGINE.Graph = {
      * @param href
      */
     removeNode: function(href) {
-        console.log("removing node: "+href);
-
         // Get list of all edges connected to this node
         _.map(this._data.nodeMap[href], function(edgeID) {
             this.removeOrphanNodes(href, edgeID);

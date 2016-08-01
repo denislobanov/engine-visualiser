@@ -20,9 +20,6 @@ ENGINE.API = {
         // Add this node to graph
         var name = data._value || data._id;
 
-        console.log("adding node: ");
-        console.log(data);
-
         ENGINE.Graph.addNode(data._id, name, data._baseType, data._type, this.getNodeHref(data));
     },
 

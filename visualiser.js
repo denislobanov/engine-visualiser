@@ -19,8 +19,6 @@ function addMetaNode(childHref, data) {
     ENGINE.Graph.addEdge(childHref, ENGINE.API.getNodeHref(data),  "isa");
 }
 
-sendRequest("http://localhost:8080/concept/ccaabb7f-668f-4f05-9b8f-974f2a3972c0", createGraph);
-
 var callbacks = {
     click: function(param) {
         _.map(param.nodes, function(x) { sendRequest(x, createGraph) });
@@ -41,3 +39,10 @@ var callbacks = {
 };
 var container = document.getElementById('mm_network');
 ENGINE.Graph.run(container, undefined, callbacks);
+
+$("#search-form").submit(function() {
+    var value = $("#search").val();
+    sendRequest("http://localhost:8080/concept/"+value, createGraph);
+
+    return false;
+});
