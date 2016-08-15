@@ -1,13 +1,12 @@
 "use strict";
 
-VISUALISER.Style = {
-
-    _defaults: {
-        network: {
+export default class Style {
+    constructor() {
+        this.network = {
             background: "#383838"
-        },
+        };
 
-        node: {
+        this.node = {
             colour: {
                 background: "#383838",
                 border: "#a1d884",
@@ -17,26 +16,26 @@ VISUALISER.Style = {
                 }
             },
             shape: "box"
-        },
+        };
 
-        edge: {
+        this.edge = {
             colour: {
                 color: "#bbbcbc",
                 highlight: "#a1d884"
             }
-        }
-    },
+        };
+    }
 
     /**
      * Return node colour based on its @baseType or default colour otherwise.
      * @param baseType
      * @returns {*}
      */
-    getNodeColour: function(baseType) {
+    getNodeColour(baseType) {
         switch(baseType) {
             case "relation-type":
                 return {
-                    background: this._defaults.node.colour.background,
+                    background: this.node.colour.background,
                     border: "#77dd77",
                     highlight: {
                         border: "#77dd77"
@@ -44,7 +43,7 @@ VISUALISER.Style = {
                 };
             case "type":
                 return {
-                    background: this._defaults.node.colour.background,
+                    background: this.node.colour.background,
                     border: "#5bc2e7",
                     highlight: {
                         border: "#5bc2e7"
@@ -52,56 +51,56 @@ VISUALISER.Style = {
                 };
             case "resource-type":
                 return {
-                    background: this._defaults.node.colour.background,
+                    background: this.node.colour.background,
                     border: "#ff7878",
                     highlight: {
                         border: "#ff7878"
                     }
                 };
             default:
-                return this._defaults.node.colour;
+                return this.node.colour;
         }
-    },
+    }
 
     /**
      * Return node shape configuration based on its @baseType or default shape otherwise.
      * @param baseType
      * @returns {string}
      */
-    getNodeShape: function(baseType) {
+    getNodeShape(baseType) {
         switch(baseType) {
             case "resource-type":
             case "relation-type":
             case "entity-type":
             default:
-                return this._defaults.node.shape;
+                return this.node.shape;
         }
-    },
+    }
 
     /**
      * Return node label font configuration based on its @baseType or default font otherwise.
      * @param baseType
      * @returns {{color: (string|string|string)}}
      */
-    getNodeFont: function(baseType) {
+    getNodeFont(baseType) {
         return {
             color: this.getNodeColour(baseType).border
         };
-    },
+    }
 
     /**
      * Return edge colour configuration.
-     * @returns {ENGINE.Style._defaults.edge.colour|{color, highlight}}
+     * @returns {ENGINE.Style.edge.colour|{color, highlight}}
      */
-    getEdgeColour: function() {
-        return this._defaults.edge.colour;
-    },
+    getEdgeColour() {
+        return this.edge.colour;
+    }
 
     /**
      * Return edge label font configuration.
      * @returns {{color: string}}
      */
-    getEdgeFont: function() {
+    getEdgeFont() {
         return {
             color: this.getEdgeColour().color
         };

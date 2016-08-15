@@ -1,33 +1,37 @@
 "use strict";
 
-VISUALISER.Graph = {
-    _data: {
+import {Style} from './Style';
+
+export default class Graph {
+    constructor() {
+        this.vis = require('vis');
+
         // vis.js network representation
-        graph: {
-            nodes: new vis.DataSet([]),
-            edges: new vis.DataSet([])
-        },
-        network: {},
+        this.graph = {
+            nodes: new this.vis.DataSet([]),
+            edges: new this.vis.DataSet([])
+        };
+        this.network = {};
 
         // Internal lookup of vis.js nodes
-        nodeMap: {},
-        edgeMap: {},
-        nodeTypeMap: {}
-    },
+        this.nodeMap = {};
+        this.edgeMap = {};
+        this.nodeTypeMap = {};
 
-    // vis.js default config
-    _defaults: {
-        options: {
-            edges: {
-                arrows: {
-                    to: true
+        // vis.js default config
+        this.defaults = {
+            options: {
+                edges: {
+                    arrows: {
+                        to: true
+                    }
+                },
+                physics: {
+                    solver: "forceAtlas2Based"
                 }
-            },
-            physics: {
-                solver: "forceAtlas2Based"
             }
-        }
-    },
+        };
+    }
 
     /**
      * Render a vis.js graph. Pass callbacks for actions on user interaction.
@@ -38,11 +42,11 @@ VISUALISER.Graph = {
      *  callbacks.doubleClick   action on left double click
      *  callbacks.rightClick    action on right click
      */
-    run: function (container, options, callbacks) {
-        var network = new vis.Network(
+    run(container, options, callbacks) {
+        var network = new this.vis.Network(
             container,
-            this._data.graph,
-            this._defaults.options || options
+            this.graph,
+            this.defaults.options || options
         );
 
         if(_.has(callbacks, "click"))
@@ -54,8 +58,8 @@ VISUALISER.Graph = {
         if(_.has(callbacks, "rightClick"))
             network.on("oncontext", callbacks.rightClick);
 
-        this._data.network = network;
-    },
+        this.network = network;
+    }
 
     /**
      * Add node to graph
@@ -65,7 +69,7 @@ VISUALISER.Graph = {
      * @param type Node type as give by Engine HAL response.
      * @param href Node HREF as give by Engine HAL response.
      */
-    addNode: function(id, label, baseType, type, href) {
+    addNode(id, label, baseType, type, href) {
         // Do not (re)add existing nodes
         if(this.getNodeType(href))
             return;
@@ -73,18 +77,18 @@ VISUALISER.Graph = {
         var node = {
             id: href,
             label: label,
-            color: ENGINE.Style.getNodeColour(baseType),
-            font: ENGINE.Style.getNodeFont(baseType),
-            shape: ENGINE.Style.getNodeShape(baseType),
+            color: Style.getNodeColour(baseType),
+            font: Style.getNodeFont(baseType),
+            shape: Style.getNodeShape(baseType),
             selected: false
         };
 
         // Add to vis.js graph
-        this._data.graph.nodes.add(node);
+        this.graph.nodes.add(node);
 
         // update nodeTypeMap only; nodeMap is updated on edge creation.
-        this._data.nodeTypeMap[href] = type;
-    },
+        this.nodeTypeMap[href] = type;
+    }
 
     /**
      * Add edge between two nodes. Uses alreadyConnected() to avoid adding duplicate edges.
@@ -92,7 +96,7 @@ VISUALISER.Graph = {
      * @param toNode HREF of inbound node for edge.
      * @param name Label to put on edge.
      */
-    addEdge: function(fromNode, toNode, name) {
+    addEdge(fromNode, toNode, name) {
         if(this.alreadyConnected(fromNode, toNode))
             return;
 
@@ -103,18 +107,18 @@ VISUALISER.Graph = {
             from: fromNode,
             to: toNode,
             label: name,
-            color: ENGINE.Style.getEdgeColour(),
-            font: ENGINE.Style.getEdgeFont()
+            color: Style.getEdgeColour(),
+            font: Style.getEdgeFont()
         };
 
         // Add to graph
-        this._data.graph.edges.add(edge);
+        this.graph.edges.add(edge);
 
         // Update internal edge tracking
         this.saveEdge(edgeID, [fromNode, toNode]);
         this.appendToNodeMap(fromNode, edgeID);
         this.appendToNodeMap(toNode, edgeID);
-    },
+    }
 
     /**
      * Checks if two nodes are already connected by an edge.
@@ -122,9 +126,9 @@ VISUALISER.Graph = {
      * @param nodeB HREF string of a node.
      * @returns {boolean}
      */
-    alreadyConnected: function(nodeA, nodeB) {
+    alreadyConnected(nodeA, nodeB) {
         // Boundary check for either node not existing
-        if((!_.has(this._data.nodeMap, nodeA)) || (!_.has(this._data.nodeMap, nodeB))) {
+        if((!_.has(this.nodeMap, nodeA)) || (!_.has(this.nodeMap, nodeB))) {
             console.log("node not in map: ");
             console.log(nodeA);
             console.log(nodeB);
@@ -132,30 +136,30 @@ VISUALISER.Graph = {
         }
 
         // _.union of empty and non-empty array results in contents of non-empty array
-        if((this._data.nodeMap[nodeA].length === 0) || (this._data.nodeMap[nodeB].length === 0)) {
+        if((this.nodeMap[nodeA].length === 0) || (this.nodeMap[nodeB].length === 0)) {
             console.log("empty entries in nodeMap for nodes:");
-            console.log(this._data.nodeMap[nodeA]);
-            console.log(this._data.nodeMap[nodeB]);
+            console.log(this.nodeMap[nodeA]);
+            console.log(this.nodeMap[nodeB]);
             return false;
         }
 
-        var edgeIDs = _.intersection(this._data.nodeMap[nodeA], this._data.nodeMap[nodeB]);
+        var edgeIDs = _.intersection(this.nodeMap[nodeA], this.nodeMap[nodeB]);
         console.log("intersection of("+nodeA+") and ("+nodeB+"):");
         console.log(edgeIDs);
 
         var result = !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
         console.log("result: "+result);
         return result;
-    },
+    }
 
     /**
      * Returns a node's `type`.
      * @param href Node HREF string.
      * @returns {*} String with node's `type`.
      */
-    getNodeType: function(href) {
-        return this._data.nodeTypeMap[href];
-    },
+    getNodeType(href) {
+        return this.nodeTypeMap[href];
+    }
 
     /**
      * Stores node in internal map. Used to quickly track with nodes we have already added to the graph, and to avoid trying
@@ -163,60 +167,60 @@ VISUALISER.Graph = {
      * @param href
      * @param edgeID
      */
-    appendToNodeMap: function(href, edgeID) {
-        if (_.has(this._data.nodeMap, href))
-            this._data.nodeMap[href].push(edgeID);
+    appendToNodeMap(href, edgeID) {
+        if (_.has(this.nodeMap, href))
+            this.nodeMap[href].push(edgeID);
         else
-            this._data.nodeMap[href] = [edgeID];
-    },
+            this.nodeMap[href] = [edgeID];
+    }
 
     /**
      * Store edge in internal map.
      * @param edgeID
      * @param nodeList
      */
-    saveEdge: function(edgeID, nodeList) {
-        if(!_.has(this._data.edgeMap, edgeID))
-            this._data.edgeMap[edgeID] = nodeList;
+    saveEdge(edgeID, nodeList) {
+        if(!_.has(this.edgeMap, edgeID))
+            this.edgeMap[edgeID] = nodeList;
         else
-            this._data.edgeMap[edgeID] = _.zip(this._data.edgeMap[edgeID], nodeList);
-    },
+            this.edgeMap[edgeID] = _.zip(this.edgeMap[edgeID], nodeList);
+    }
 
     /**
      * Remove a node from the graph.
      * @param href
      */
-    removeNode: function(href) {
+    removeNode(href) {
         // Get list of all edges connected to this node
-        _.map(this._data.nodeMap[href], function(edgeID) {
+        _.map(this.nodeMap[href], edgeID => {
             this.removeOrphanNodes(href, edgeID);
 
             // Remove all edges connected to this node
-            this._data.graph.edges.remove(edgeID);
-            delete this._data.edgeMap[edgeID];
+            this.graph.edges.remove(edgeID);
+            delete this.edgeMap[edgeID];
 
         }, this);
 
         // Now we can remove this node
-        delete this._data.nodeMap[href];
-        delete this._data.nodeTypeMap[href];
-        this._data.graph.nodes.remove(href);
-    },
+        delete this.nodeMap[href];
+        delete this.nodeTypeMap[href];
+        this.graph.nodes.remove(href);
+    }
 
     /**
      * Removes child node of @parent connected by @edgeID if that child node has no other edges except to its parent.
      * @param parent HREF String
      * @param edgeID Edge ID String (T4 UUID)
      */
-    removeOrphanNodes: function(parent, edgeID) {
+    removeOrphanNodes(parent, edgeID) {
         // Node connected to parent by edgeID
-        _.map(_.without(this._data.edgeMap[edgeID], parent), function(node) {
+        _.map(_.without(this.edgeMap[edgeID], parent), node => {
             // If it has no other connections it will become orphaned on removal. Remove it too.
-            if(_.without(this._data.nodeMap[node], edgeID).length == 0) {
-                delete this._data.nodeMap[node];
-                delete this._data.nodeTypeMap[node];
-                this._data.graph.nodes.remove(node);
+            if(_.without(this.nodeMap[node], edgeID).length == 0) {
+                delete this.nodeMap[node];
+                delete this.nodeTypeMap[node];
+                this.graph.nodes.remove(node);
             }
         }, this);
     }
-};
+}

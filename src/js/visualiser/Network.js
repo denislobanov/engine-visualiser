@@ -1,13 +1,12 @@
 "use strict";
 
-VISUALISER.Network = {
-    _defaults: {
-        requestType: 'GET',
-        contentType: 'application/json; charset=utf-8',
-        dataType: 'json',
-        //async: true,
-        cache: false
-    },
+export default class Network {
+    constructor() {
+        this.requestType = 'GET';
+        this.contentType = 'application/json; charset=utf-8';
+        this.dataType = 'json';
+        this.cache = false;
+    }
 
     // can use queue of pending requests here..
 
@@ -25,12 +24,12 @@ VISUALISER.Network = {
      *  - cache
      * @param requestData
      */
-    request: function(requestData) {
+    request(requestData) {
         $.ajax({
-            type: requestData.requestType || this._defaults.requestType,
-            contentType: requestData.contentType || this._defaults.contentType,
-            dataType: requestData.dataType || this._defaults.dataType,
-            cache: requestData.cache || this._defaults.cache,
+            type: requestData.requestType || this.requestType,
+            contentType: requestData.contentType || this.contentType,
+            dataType: requestData.dataType || this.dataType,
+            cache: requestData.cache || this.cache,
             data: requestData.data,
             url: requestData.url,
 
