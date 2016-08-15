@@ -1,6 +1,11 @@
 {
-    "dependencies": {
-        "vis": "4.10",
-        "underscore": "1.8"
-    }
+  "dependencies": {
+    "vue": "^1.0.26",
+    "vue-router": "^0.7.13",
+    "vis": "4.10",
+    "underscore": "1.8"
+  },
+  "devDependencies": {
+    "vueify": "^8.7.0"
+  }
 }

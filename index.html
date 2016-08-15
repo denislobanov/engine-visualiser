@@ -1,30 +1,22 @@
 <html>
 <head>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="node_modules/vis/dist/vis.js"></script>
-    <script type="text/javascript" src="node_modules/underscore/underscore.js"></script>
-    <link href="node_modules/vis/dist/vis.css" rel="stylesheet" type="text/css" />
-
-    <style type="text/css">
-        #mm_network {
-            width: 100%;
-            height: 95%;
-        }
-    </style>
 </head>
 <body>
-<div id="mm_network" oncontextmenu="return false;"></div>
-<form id="search-form">
-    Search
-    <input type="text" id="search"/>
-</form>
-
-<script type="text/javascript" src="ENGINE.js"></script>
-<script type="text/javascript" src="ENGINE.API.js"></script>
-<script type="text/javascript" src="ENGINE.Network.js"></script>
-<script type="text/javascript" src="ENGINE.Style.js"></script>
-<script type="text/javascript" src="ENGINE.Graph.js"></script>
-<script type="text/javascript" src="visualiser.js"></script>
+    <div id="app">
+        <h1>Some title</h1>
+        <div id="navigation">
+            <ul>
+                <li><a v-link="{ path: '/status' }">Status</a></li>
+                <li><a v-link="{ path: '/graql' }">Graql Console</a></li>
+                <li><a v-link="{ path: '/visualiser' }">Visualiser</a></li>
+                <li><a v-link="{ path: '/upload' }">File Upload</a></li>
+            </ul>
+        </div>
+        <div id="content">
+            <router-view></router-view>
+        </div>
+    </div>
+    <script src="static/build.js"></script>
 </body>
 </html>
 
