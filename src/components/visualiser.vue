@@ -1,73 +1,43 @@
 <template>
-    <div id="mm_network" oncontextmenu="return false;"></div>
-    <form id="search-form">
-        Search
-        <input type="text" id="search"/>
-    </form>
+    <h3>Visualiser</h3>
+    <div v-el:graph class="graph"></div>
+    <input v-model="searchValue" v-on:click="clearValue">
+    <button v-on:click="notify">Search</button>
 </template>
 
-<style type="text/css">
-    #mm_network {
-        width: 100%;
-        height: 95%;
-    }
+<style>
+.graph {
+    width: 100%;
+    height: 75%;
+}
 </style>
 
 <script>
-    "use strict";
+import Visualiser from '../js/visualiser.js'
 
-    import Graph from '../js/visualiser/Graph'
-    import HalAPI from '../js/visualiser/HalAPI'
-    import Network from '../js/visualiser/Network'
-
-    var graph = new Graph();
-    var halAPI = new HalAPI(graph);
-    var network = new Network();
-
-    function sendRequest(href, success) {
-        var proxyRequest = {
-            url: "proxy.php?q="+href,
-            success: success
-        };
-
-        network.request(proxyRequest);
-    }
-
-    function createGraph(data) {
-        halAPI.addNodes(data);
-        halAPI.iterateEmbeddedKeys(data);
-    }
-
-    function addMetaNode(childHref, data) {
-        halAPI.addNodes(data);
-        graph.addEdge(childHref, halAPI.getNodeHref(data),  "isa");
-    }
-
-    var callbacks = {
-        click: function(param) {
-            _.map(param.nodes, function(x) { sendRequest(x, createGraph) });
-        },
-
-        doubleClick: function(param) {
-            var childHref = param.nodes[0];
-            var parentHref = "http://localhost:8080/concept/"+graph.getNodeType(childHref);
-
-            sendRequest(parentHref, addMetaNode.bind(undefined, childHref));
-        },
-
-        rightClick: function(param) {
-            console.log(param);
-
-            _.map(param.nodes, graph.removeNode, graph);
+export default {
+    data() {
+        return {
+            searchValue: "Enter search string; e.g. 'type'.",
+            visualiser: {}
         }
-    };
-    var container = document.getElementById('mm_network');
-    graph.run(container, undefined, callbacks);
+    },
 
-    $("#search-form").submit(function() {
-        var value = $("#search").val();
-        sendRequest("http://localhost:8080/concept/"+value, createGraph);
+    attached() {
+        visualiser = new Visualiser(this.$els.graph);
+        console.log("attached graph")
+    },
 
-        return false;
-    });
+    methods: {
+        notify() {
+            visualiser.sendRequest("/concept/"+this.searchValue, visualiser.createGraph);
+            console.log("go graph: "+this.searchValue)
+            this.searchValue = ''
+        },
+
+        clearValue() {
+            this.searchValue=''
+        }
+    }
+}
 </script>

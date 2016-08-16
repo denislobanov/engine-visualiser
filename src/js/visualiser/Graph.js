@@ -1,5 +1,6 @@
 "use strict";
 
+import _ from 'underscore';
 import {Style} from './Style';
 
 export default class Graph {
