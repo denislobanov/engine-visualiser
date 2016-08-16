@@ -1,14 +1,19 @@
 <template>
     <h3>Visualiser</h3>
-    <div v-el:graph class="graph"></div>
-    <input v-model="searchValue" v-on:click="clearValue">
-    <button v-on:click="notify">Search</button>
+    <div class="graph">
+        <div v-el:graph></div>
+        <input v-model="searchValue" v-on:click="clearValue" class="searchInput">
+        <button v-on:click="notify">Search</button>
+    </div>
 </template>
 
 <style>
 .graph {
     width: 100%;
-    height: 75%;
+    height: 82%;
+}
+.searchInput {
+    width: 40%;
 }
 </style>
 
