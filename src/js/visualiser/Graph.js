@@ -1,7 +1,7 @@
 "use strict";
 
 import _ from 'underscore';
-import {Style} from './Style';
+import Style from './Style';
 
 export default class Graph {
     constructor() {
@@ -32,6 +32,8 @@ export default class Graph {
                 }
             }
         };
+
+        this.style = new Style();
     }
 
     /**
@@ -78,9 +80,9 @@ export default class Graph {
         var node = {
             id: href,
             label: label,
-            color: Style.getNodeColour(baseType),
-            font: Style.getNodeFont(baseType),
-            shape: Style.getNodeShape(baseType),
+            color: this.style.getNodeColour(baseType),
+            font: this.style.getNodeFont(baseType),
+            shape: this.style.getNodeShape(baseType),
             selected: false
         };
 
@@ -101,15 +103,15 @@ export default class Graph {
         if(this.alreadyConnected(fromNode, toNode))
             return;
 
-        var edgeID = vis.util.randomUUID();
+        var edgeID = this.vis.util.randomUUID();
 
         var edge = {
             id: edgeID,
             from: fromNode,
             to: toNode,
             label: name,
-            color: Style.getEdgeColour(),
-            font: Style.getEdgeFont()
+            color: this.style.getEdgeColour(),
+            font: this.style.getEdgeFont()
         };
 
         // Add to graph

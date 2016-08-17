@@ -13,17 +13,17 @@ export default class Visualiser {
 
         var callbacks = {
             click: function(param) {
-                _.map(param.nodes, x => { sendRequest(x, createGraph), this });
+                _.map(param.nodes, x => { this.sendRequest(x, createGraph)}, this);
             },
 
             doubleClick: param => {
                 var childHref = param.nodes[0];
-                var parentHref = "http://localhost:8080/concept/"+graph.getNodeType(childHref);
+                var parentHref = "/concept/"+graph.getNodeType(childHref);
 
                 sendRequest(parentHref, addMetaNode.bind(undefined, childHref));
             },
 
-            rightClick: param => { _.map(param.nodes, graph.removeNode, this.graph) }
+            rightClick: param => { _.map(param.nodes, graph.removeNode, this) }
         };
 
         // Start vis
@@ -32,8 +32,8 @@ export default class Visualiser {
 
     sendRequest(href, success) {
         var proxyRequest = {
-            url: "proxy.php?q="+href,
-            success: success
+            url: "proxy.php?q=http://10.10.10.142:8080"+href,
+            success: success.bind(this)
         };
 
         this.network.request(proxyRequest);
@@ -48,5 +48,4 @@ export default class Visualiser {
         this.halAPI.addNodes(data);
         this.graph.addEdge(childHref, halAPI.getNodeHref(data),  "isa");
     }
-
 }

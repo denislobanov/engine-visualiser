@@ -1,3 +1,5 @@
+import _ from 'underscore';
+
 export default class HalAPI {
     constructor(graph) {
         this.graph = graph;
