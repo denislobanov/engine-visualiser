@@ -11,6 +11,8 @@ export default class HalAPI {
      * @returns {string|string|*|o}
      */
     getNodeHref(node) {
+        console.log(node);
+        console.log('---');
         return node._links.self.href;
     }
 

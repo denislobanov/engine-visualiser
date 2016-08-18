@@ -138,7 +138,7 @@ export default class Graph {
             return false;
         }
 
-        // _.union of empty and non-empty array results in contents of non-empty array
+        // _.intersection of empty and non-empty array results in contents of non-empty array
         if((this.nodeMap[nodeA].length === 0) || (this.nodeMap[nodeB].length === 0)) {
             console.log("empty entries in nodeMap for nodes:");
             console.log(this.nodeMap[nodeA]);

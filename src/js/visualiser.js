@@ -12,18 +12,9 @@ export default class Visualiser {
         this.network = new Network();
 
         var callbacks = {
-            click: function(param) {
-                _.map(param.nodes, x => { this.sendRequest(x, createGraph)}, this);
-            },
-
-            doubleClick: param => {
-                var childHref = param.nodes[0];
-                var parentHref = "/concept/"+graph.getNodeType(childHref);
-
-                sendRequest(parentHref, addMetaNode.bind(undefined, childHref));
-            },
-
-            rightClick: param => { _.map(param.nodes, graph.removeNode, this) }
+            click: x => this.onClick(x),
+            doubleClick: x => this.doubleClick(x),
+            rightClick: x => this.rightClick(x)
         };
 
         // Start vis
@@ -46,6 +37,21 @@ export default class Visualiser {
 
     addMetaNode(childHref, data) {
         this.halAPI.addNodes(data);
-        this.graph.addEdge(childHref, halAPI.getNodeHref(data),  "isa");
+        this.graph.addEdge(childHref, this.halAPI.getNodeHref(data),  "isa");
+    }
+
+    onClick(param) {
+        _.map(param.nodes, x => { this.sendRequest(x, this.createGraph)}, this);
+    }
+
+    doubleClick(param) {
+        var childHref = param.nodes[0];
+        var parentHref = "/concept/"+this.graph.getNodeType(childHref);
+
+        this.sendRequest(parentHref, x => this.addMetaNode(x, childHref));
+    }
+
+    rightClick(param) {
+        _.map(param.nodes, this.graph.removeNode, this.graph);
     }
 }
