@@ -14,7 +14,11 @@ export default class Graph {
         };
         this.network = {};
 
+<<<<<<< Updated upstream:src/js/visualiser/Graph.js
         // Internal lookup of vis.js nodes
+=======
+        // Internal node tracking
+>>>>>>> Stashed changes:src/js/visualiser/Graph.js
         this.nodeMap = {};
         this.edgeMap = {};
         this.nodeTypeMap = {};
@@ -92,6 +96,13 @@ export default class Graph {
         // update nodeTypeMap only; nodeMap is updated on edge creation.
         this.nodeTypeMap[href] = type;
     }
+<<<<<<< Updated upstream:src/js/visualiser/Graph.js
+=======
+
+    generateID() {
+        return this.vis.util.randomUUID();
+    }
+>>>>>>> Stashed changes:src/js/visualiser/Graph.js
 
     /**
      * Add edge between two nodes. Uses alreadyConnected() to avoid adding duplicate edges.
