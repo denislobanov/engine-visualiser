@@ -1,6 +1,7 @@
 import _ from 'underscore';
 import Graph from './Graph';
 import * as APITerms from './APITerms';
+import * as EdgeUtils from './TypeWeight';
 
 export default class HalAPI {
     constructor(graph) {
@@ -39,17 +40,25 @@ export default class HalAPI {
 
     parseEmbedded(objs, parent, roleName) {
         _.map(objs, obj => {
+            if(this.alreadyConnected(obj, parent))
+                return;
+
             // Embedded objects can be either assertions or concepts
-            if(obj.type === APITerms.RELATION_TYPE) {
+            if(obj.type === APITerms.RELATION_TYPE)
                 this.addNode(obj);
-
-                // Add edge from assertion
-                this.addEdge(obj, parent, roleName);
-
-            } else {
+            else
                 this.addConcept(obj);
-                this.addEdge(parent, obj, roleName);
-            }
+
+            // Decide on edge direction
+            var objType = obj[APITerms.KEY_TYPE];
+            var parentType = parent[APITerms.KEY_TYPE];
+            var edgeLabel = EdgeUtils.edgeLabel(objType, parentType, roleName);
+
+            if(EdgeUtils.typeWeight(objType) > EdgeUtils.typeWeight(parentType))
+                this.addEdge(parent, obj, edgeLabel);
+            else
+                this.addEdge(obj, parent, edgeLabel);
+
         });
     }
 
@@ -68,51 +77,42 @@ export default class HalAPI {
 
     // node1 and nod2 have to be objects for 'type' field
     addEdge(fromNode, toNode, label) {
-        if(this.alreadyConnected(fromNode, toNode))
-            return;
-
-        var edgeID = this.graph.addEdge(fromNode, toNode, label);
-
-        // Update internal map
         var fromHref = this.getNodeHref(fromNode);
         var toHref = this.getNodeHref(toNode);
 
-        this.edgeMap[edgeID] = _.uniq(_.zip(this.edgeMap[edgeID], [fromHref, toHref]));
+        var edgeID = this.graph.addEdge(fromHref, toHref, label);
 
-        this.nodeMap[fromHref] = _.zip(this.nodeMap[fromHref], edgeID);
-        this.nodeMap[toHref] = _.zip(this.nodeMap[toHref], edgeID);
+        // Update internal map
+        this.edgeMap[edgeID] = _.uniq(_.flatten(_.zip(this.edgeMap[edgeID], [fromHref, toHref])));
+        this.nodeMap[fromHref].push(edgeID);
+        this.nodeMap[toHref].push(edgeID);
     }
 
 
     /**
      * Checks if two nodes are already connected by an edge.
-     * @param nodeA HREF string of a node.
-     * @param nodeB HREF string of a node.
+     * @param nodeA
+     * @param nodeB
      * @returns {boolean}
      */
     alreadyConnected(nodeA, nodeB) {
+        var hrefA = this.getNodeHref(nodeA);
+        var hrefB = this.getNodeHref(nodeB);
+
         // Boundary check for either node not existing
-        if((!_.has(this.nodeMap, nodeA)) || (!_.has(this.nodeMap, nodeB))) {
-            console.log("node not in map: ");
-            console.log(nodeA);
-            console.log(nodeB);
+        if((!_.has(this.nodeMap, hrefA)) || (!_.has(this.nodeMap, hrefB)))
             return false;
-        }
 
         // _.intersection of empty and non-empty array results in contents of non-empty array
-        if((this.nodeMap[nodeA].length === 0) || (this.nodeMap[nodeB].length === 0)) {
-            console.log("empty entries in nodeMap for nodes:");
-            console.log(this.nodeMap[nodeA]);
-            console.log(this.nodeMap[nodeB]);
+        if((this.nodeMap[hrefA].length === 0) || (this.nodeMap[hrefB].length === 0))
             return false;
-        }
 
-        var edgeIDs = _.intersection(this.nodeMap[nodeA], this.nodeMap[nodeB]);
-        console.log("intersection of("+nodeA.id+") and ("+nodeB.id+"):");
-        console.log(edgeIDs);
+        var edgeIDs = _.intersection(this.nodeMap[hrefA], this.nodeMap[hrefB]);
+        //console.log("intersection of("+hrefA+") and ("+hrefB+"):");
+        //console.log(edgeIDs);
 
         var result = !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
-        console.log("result: "+result);
+        //console.log("result: "+result);
         return result;
     }
 }
