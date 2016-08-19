@@ -49,10 +49,10 @@ export default class HalAPI {
             var edgeLabel = this.edgeLabel(obj, parent);
 
             if(EdgeUtils.leftSignificant(obj, parent))
-                this.addEdge(parent, obj, edgeLabel);
+                this.addEdge(obj, parent, edgeLabel);
 
             else
-                this.addEdge(obj, parent, edgeLabel);
+                this.addEdge(parent, obj, edgeLabel);
 
             this.addConcept(obj);
 
