@@ -1,9 +1,9 @@
 "use strict";
 
 import _ from 'underscore';
-import Graph from '../js/visualiser/Graph';
-import HalAPI from '../js/visualiser/HalAPI';
-import Network from '../js/visualiser/Network';
+import Graph from './Graph';
+import HalAPI from './HalAPI';
+import Network from './Network';
 
 export default class Visualiser {
     constructor(container) {
@@ -31,13 +31,12 @@ export default class Visualiser {
     }
 
     createGraph(data) {
-        this.halAPI.addNodes(data);
-        this.halAPI.iterateEmbeddedKeys(data);
+        this.halAPI.addConcept(data);
     }
 
     addMetaNode(childHref, data) {
-        this.halAPI.addNodes(data);
-        this.graph.addEdge(childHref, this.halAPI.getNodeHref(data),  "isa");
+        //this.halAPI.addNodes(data);
+        //this.graph.addEdge(childHref, this.halAPI.getNodeHref(data),  "isa");
     }
 
     onClick(param) {
@@ -46,9 +45,10 @@ export default class Visualiser {
 
     doubleClick(param) {
         var childHref = param.nodes[0];
-        var parentHref = "/concept/"+this.graph.getNodeType(childHref);
+        console.log("TODO");
+        //var parentHref = "/concept/"+this.graph.getNodeType(childHref);
 
-        this.sendRequest(parentHref, x => this.addMetaNode(x, childHref));
+        //this.sendRequest(parentHref, x => this.addMetaNode(x, childHref));
     }
 
     rightClick(param) {

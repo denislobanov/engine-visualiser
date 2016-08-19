@@ -1,8 +1,16 @@
 import _ from 'underscore';
+import Graph from './Graph';
+import * as APITerms from './APITerms';
 
 export default class HalAPI {
     constructor(graph) {
         this.graph = graph;
+
+        // node href to [edge ids]
+        this.nodeMap = {};
+
+        // edge id to [node href]
+        this.edgeMap = {};
     }
 
     /**
@@ -11,8 +19,6 @@ export default class HalAPI {
      * @returns {string|string|*|o}
      */
     getNodeHref(node) {
-        console.log(node);
-        console.log('---');
         return node._links.self.href;
     }
 
@@ -20,44 +26,93 @@ export default class HalAPI {
      * Adds just the current node in data to graph via ENGINE.Graph
      * @param data
      */
-    addNodes(data) {
-        // Add this node to graph
-        var name = data._value || data._id;
+    addConcept(data) {
+        this.addNode(data);
 
-        this.graph.addNode(data._id, name, data._baseType, data._type, this.getNodeHref(data));
-    }
-
-    /**
-     * Iterate current nodes `_embedded` object to add nodes and relationships via iterateEmbeddedKeys()
-     * @param data
-     */
-    iterateEmbeddedKeys(data) {
-        if (_.has(data, "_embedded")) {
-            _.map(_.keys(data._embedded), k => {
-                this.addEmbedded(this.getNodeHref(data), data._embedded[k], k);
-            }, this);
+        // Add assertions from _embedded
+        if(APITerms.KEY_EMBEDDED in data) {
+            _.map(Object.keys(data[APITerms.KEY_EMBEDDED]), key => {
+                this.parseEmbedded(data[APITerms.KEY_EMBEDDED][key], data, key)
+            });
         }
     }
 
+    parseEmbedded(objs, parent, roleName) {
+        _.map(objs, obj => {
+            // Embedded objects can be either assertions or concepts
+            if(obj.type === APITerms.RELATION_TYPE) {
+                this.addNode(obj);
+
+                // Add edge from assertion
+                this.addEdge(obj, parent, roleName);
+
+            } else {
+                this.addConcept(obj);
+                this.addEdge(parent, obj, roleName);
+            }
+        });
+    }
+
+    addNode(data) {
+        var href = this.getNodeHref(data);
+        if(href in this.nodeMap)
+            return;
+
+        console.log("adding brand new node: "+href);
+        var name = data._value || data._id;
+        this.graph.addNode(data._id, name, data._baseType, data._type, href);
+
+        // Update internal map
+        this.nodeMap[href] = [];
+    }
+
+    // node1 and nod2 have to be objects for 'type' field
+    addEdge(fromNode, toNode, label) {
+        if(this.alreadyConnected(fromNode, toNode))
+            return;
+
+        var edgeID = this.graph.addEdge(fromNode, toNode, label);
+
+        // Update internal map
+        var fromHref = this.getNodeHref(fromNode);
+        var toHref = this.getNodeHref(toNode);
+
+        this.edgeMap[edgeID] = _.uniq(_.zip(this.edgeMap[edgeID], [fromHref, toHref]));
+
+        this.nodeMap[fromHref] = _.zip(this.nodeMap[fromHref], edgeID);
+        this.nodeMap[toHref] = _.zip(this.nodeMap[toHref], edgeID);
+    }
+
+
     /**
-     * Add edges and nodes from "_embedded"
-     * @param parentHref
-     * @param nodeList
-     * @param edgeName
+     * Checks if two nodes are already connected by an edge.
+     * @param nodeA HREF string of a node.
+     * @param nodeB HREF string of a node.
+     * @returns {boolean}
      */
-    addEmbedded(parentHref, nodeList, edgeName) {
-        _.map(nodeList, x => {
-            var href = this.getNodeHref(x);
+    alreadyConnected(nodeA, nodeB) {
+        // Boundary check for either node not existing
+        if((!_.has(this.nodeMap, nodeA)) || (!_.has(this.nodeMap, nodeB))) {
+            console.log("node not in map: ");
+            console.log(nodeA);
+            console.log(nodeB);
+            return false;
+        }
 
-            // Add edge from x to parent
-            if(x._baseType === "relation-type")
-                this.graph.addEdge(href, parentHref, edgeName);
-            else
-                this.graph.addEdge(parentHref, href, edgeName);
+        // _.intersection of empty and non-empty array results in contents of non-empty array
+        if((this.nodeMap[nodeA].length === 0) || (this.nodeMap[nodeB].length === 0)) {
+            console.log("empty entries in nodeMap for nodes:");
+            console.log(this.nodeMap[nodeA]);
+            console.log(this.nodeMap[nodeB]);
+            return false;
+        }
 
-            // Add node from nodeList
-            this.addNodes(x);
+        var edgeIDs = _.intersection(this.nodeMap[nodeA], this.nodeMap[nodeB]);
+        console.log("intersection of("+nodeA.id+") and ("+nodeB.id+"):");
+        console.log(edgeIDs);
 
-        }, this);
+        var result = !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
+        console.log("result: "+result);
+        return result;
     }
 }

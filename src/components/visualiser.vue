@@ -18,7 +18,7 @@
 </style>
 
 <script>
-import Visualiser from '../js/visualiser.js'
+import Visualiser from '../js/visualiser/Visualiser.js'
 
 export default {
     data() {

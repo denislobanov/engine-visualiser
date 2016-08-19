@@ -2,23 +2,18 @@
 
 import _ from 'underscore';
 import Style from './Style';
+import vis from 'vis';
 
 export default class Graph {
     constructor() {
-        this.vis = require('vis');
-
         // vis.js network representation
         this.graph = {
-            nodes: new this.vis.DataSet([]),
-            edges: new this.vis.DataSet([])
+            nodes: new vis.DataSet([]),
+            edges: new vis.DataSet([])
         };
         this.network = {};
 
-<<<<<<< Updated upstream:src/js/visualiser/Graph.js
-        // Internal lookup of vis.js nodes
-=======
         // Internal node tracking
->>>>>>> Stashed changes:src/js/visualiser/Graph.js
         this.nodeMap = {};
         this.edgeMap = {};
         this.nodeTypeMap = {};
@@ -50,7 +45,7 @@ export default class Graph {
      *  callbacks.rightClick    action on right click
      */
     run(container, options, callbacks) {
-        var network = new this.vis.Network(
+        var network = new vis.Network(
             container,
             this.graph,
             this.defaults.options || options
@@ -77,10 +72,6 @@ export default class Graph {
      * @param href Node HREF as give by Engine HAL response.
      */
     addNode(id, label, baseType, type, href) {
-        // Do not (re)add existing nodes
-        if(this.getNodeType(href))
-            return;
-
         var node = {
             id: href,
             label: label,
@@ -92,17 +83,7 @@ export default class Graph {
 
         // Add to vis.js graph
         this.graph.nodes.add(node);
-
-        // update nodeTypeMap only; nodeMap is updated on edge creation.
-        this.nodeTypeMap[href] = type;
     }
-<<<<<<< Updated upstream:src/js/visualiser/Graph.js
-=======
-
-    generateID() {
-        return this.vis.util.randomUUID();
-    }
->>>>>>> Stashed changes:src/js/visualiser/Graph.js
 
     /**
      * Add edge between two nodes. Uses alreadyConnected() to avoid adding duplicate edges.
@@ -111,10 +92,7 @@ export default class Graph {
      * @param name Label to put on edge.
      */
     addEdge(fromNode, toNode, name) {
-        if(this.alreadyConnected(fromNode, toNode))
-            return;
-
-        var edgeID = this.vis.util.randomUUID();
+        var edgeID = vis.util.randomUUID();
 
         var edge = {
             id: edgeID,
@@ -129,41 +107,9 @@ export default class Graph {
         this.graph.edges.add(edge);
 
         // Update internal edge tracking
-        this.saveEdge(edgeID, [fromNode, toNode]);
-        this.appendToNodeMap(fromNode, edgeID);
-        this.appendToNodeMap(toNode, edgeID);
-    }
-
-    /**
-     * Checks if two nodes are already connected by an edge.
-     * @param nodeA HREF string of a node.
-     * @param nodeB HREF string of a node.
-     * @returns {boolean}
-     */
-    alreadyConnected(nodeA, nodeB) {
-        // Boundary check for either node not existing
-        if((!_.has(this.nodeMap, nodeA)) || (!_.has(this.nodeMap, nodeB))) {
-            console.log("node not in map: ");
-            console.log(nodeA);
-            console.log(nodeB);
-            return false;
-        }
-
-        // _.intersection of empty and non-empty array results in contents of non-empty array
-        if((this.nodeMap[nodeA].length === 0) || (this.nodeMap[nodeB].length === 0)) {
-            console.log("empty entries in nodeMap for nodes:");
-            console.log(this.nodeMap[nodeA]);
-            console.log(this.nodeMap[nodeB]);
-            return false;
-        }
-
-        var edgeIDs = _.intersection(this.nodeMap[nodeA], this.nodeMap[nodeB]);
-        console.log("intersection of("+nodeA+") and ("+nodeB+"):");
-        console.log(edgeIDs);
-
-        var result = !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
-        console.log("result: "+result);
-        return result;
+        //this.saveEdge(edgeID, [fromNode, toNode]);
+        //this.appendToNodeMap(fromNode, edgeID);
+        //this.appendToNodeMap(toNode, edgeID);
     }
 
     /**
