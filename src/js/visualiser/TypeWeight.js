@@ -1,20 +1,18 @@
 import * as APITerms from './APITerms';
 
-export function typeWeight(conceptType) {
+export function weight(baseType) {
     var weightMap = {
-        "relation-type": 1,
-        "type": 2
+        "entity-type": 1,
+        "relation-type": 2,
+        "type": 3
     };
 
-    if (conceptType in weightMap)
-        return weightMap[conceptType];
+    if (baseType in weightMap)
+        return weightMap[baseType];
     else
         return 0;
 }
 
-export function edgeLabel(conceptAType, conceptBType, roleName) {
-    if((conceptAType === APITerms.TYPE_TYPE)||(conceptBType === APITerms.TYPE_TYPE))
-        return APITerms.EDGE_LABEL_ISA;
-    else
-        return roleName;
+export function leftSignificant(l, r) {
+    return (weight(l[APITerms.KEY_BASE_TYPE]) > weight(r[APITerms.KEY_BASE_TYPE]));
 }

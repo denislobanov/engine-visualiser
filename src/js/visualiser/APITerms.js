@@ -8,6 +8,7 @@ export const ENTITY_TYPE = "entity-type";
 
 export const KEY_EMBEDDED = "_embedded";
 export const KEY_TYPE = "_type";
+export const KEY_BASE_TYPE = "_baseType";
 
 export const EDGE_LABEL_ISA = "is a";
 

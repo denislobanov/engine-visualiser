@@ -43,23 +43,34 @@ export default class HalAPI {
             if(this.alreadyConnected(obj, parent))
                 return;
 
-            // Embedded objects can be either assertions or concepts
-            if(obj.type === APITerms.RELATION_TYPE)
-                this.addNode(obj);
-            else
-                this.addConcept(obj);
+            // Add node and iterate its _embedded field
+            this.addNode(obj);
 
-            // Decide on edge direction
-            var objType = obj[APITerms.KEY_TYPE];
-            var parentType = parent[APITerms.KEY_TYPE];
-            var edgeLabel = EdgeUtils.edgeLabel(objType, parentType, roleName);
+            var edgeLabel = this.edgeLabel(obj, parent);
 
-            if(EdgeUtils.typeWeight(objType) > EdgeUtils.typeWeight(parentType))
+            if(EdgeUtils.leftSignificant(obj, parent))
                 this.addEdge(parent, obj, edgeLabel);
+
             else
                 this.addEdge(obj, parent, edgeLabel);
 
+            this.addConcept(obj);
+
         });
+    }
+
+    edgeLabel(nodeA, nodeB) {
+        if(nodeA[APITerms.KEY_BASE_TYPE] === APITerms.TYPE_TYPE)
+            return APITerms.EDGE_LABEL_ISA;
+
+        if(nodeB[APITerms.KEY_BASE_TYPE] === APITerms.TYPE_TYPE)
+            return APITerms.EDGE_LABEL_ISA;
+
+        if(EdgeUtils.leftSignificant(nodeA, nodeB))
+            return nodeB[APITerms.KEY_TYPE];
+
+        else
+            return nodeA[APITerms.KEY_TYPE];
     }
 
     addNode(data) {
@@ -108,11 +119,14 @@ export default class HalAPI {
             return false;
 
         var edgeIDs = _.intersection(this.nodeMap[hrefA], this.nodeMap[hrefB]);
-        //console.log("intersection of("+hrefA+") and ("+hrefB+"):");
-        //console.log(edgeIDs);
+        console.log("intersection of("+hrefA+") and ("+hrefB+"):");
+        console.log(edgeIDs);
+        console.log("where arrays are:");
+        console.log(this.nodeMap[hrefA]);
+        console.log(this.nodeMap[hrefB]);
 
         var result = !!(edgeIDs !== undefined && edgeIDs !== null && edgeIDs.length > 0);
-        //console.log("result: "+result);
+        console.log("result: "+result);
         return result;
     }
 }

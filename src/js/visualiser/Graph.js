@@ -13,11 +13,6 @@ export default class Graph {
         };
         this.network = {};
 
-        // Internal node tracking
-        this.nodeMap = {};
-        this.edgeMap = {};
-        this.nodeTypeMap = {};
-
         // vis.js default config
         this.defaults = {
             options: {
@@ -105,45 +100,6 @@ export default class Graph {
 
         // Add to graph
         this.graph.edges.add(edge);
-
-        // Update internal edge tracking
-        //this.saveEdge(edgeID, [fromNode, toNode]);
-        //this.appendToNodeMap(fromNode, edgeID);
-        //this.appendToNodeMap(toNode, edgeID);
-    }
-
-    /**
-     * Returns a node's `type`.
-     * @param href Node HREF string.
-     * @returns {*} String with node's `type`.
-     */
-    getNodeType(href) {
-        return this.nodeTypeMap[href];
-    }
-
-    /**
-     * Stores node in internal map. Used to quickly track with nodes we have already added to the graph, and to avoid trying
-     * to add duplicates.
-     * @param href
-     * @param edgeID
-     */
-    appendToNodeMap(href, edgeID) {
-        if (_.has(this.nodeMap, href))
-            this.nodeMap[href].push(edgeID);
-        else
-            this.nodeMap[href] = [edgeID];
-    }
-
-    /**
-     * Store edge in internal map.
-     * @param edgeID
-     * @param nodeList
-     */
-    saveEdge(edgeID, nodeList) {
-        if(!_.has(this.edgeMap, edgeID))
-            this.edgeMap[edgeID] = nodeList;
-        else
-            this.edgeMap[edgeID] = _.zip(this.edgeMap[edgeID], nodeList);
     }
 
     /**
